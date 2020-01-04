@@ -16,6 +16,8 @@ module.exports = function GatheringMarkers(mod) {
 			mod.command.message('   /8 gathering messager - Toggles proxy messages');
 			mod.command.message('   /8 gathering markers - Toggles item markers');
 			mod.command.message('   /8 gathering clear - Clears item markers');
+			mod.command.message('   /8 gathering show whitelist - Lists white listed items');
+			mod.command.message('   /8 gathering show markers - Lists marked items');
 		},
 		off() {
 			mod.settings.enabled = false;
@@ -51,6 +53,24 @@ module.exports = function GatheringMarkers(mod) {
 				clearMarks();
 			}
 		},
+		show(p1) {
+			switch(p1) {
+				case "whitelist":
+					mod.command.message("List of white listed items:");
+					for (let item of Object.keys(mod.settings.whiteList).sort()) {
+						mod.command.message(item);
+					}
+					break;
+				case "markers":
+					mod.command.message("List of marked items:");
+					for (let item of Object.keys(mod.settings.markList).sort()) {
+						mod.command.message(item);
+					}
+					break;
+				default:
+					mod.command.message("We have no idea what you are talking about");
+			}
+		},
 		$none() {
 			mod.settings.enabled = !mod.settings.enabled;
 			mod.command.message('Module: ' + (mod.settings.enabled ? 'enabled' : 'disabled'));
@@ -67,10 +87,10 @@ module.exports = function GatheringMarkers(mod) {
 	
     mod.hook('S_SPAWN_COLLECTION', 4, (event) => {
         if (!mod.settings.enabled || !active) return;
-        if (!mod.settings.whiteList.includes(event.id)) return false;
+        if (!Object.values(mod.settings.whiteList).includes(event.id)) return false;
 
         if (mod.settings.markEnabled) {   
-            if (mod.settings.markList.includes(event.id) && !marks.includes(event.gameId)) {
+            if (Object.values(mod.settings.markList).includes(event.id) && !marks.includes(event.gameId)) {
                 spawnMark(event.gameId*idMod, event.loc);
                 marks.push(event.gameId);
             }

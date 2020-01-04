@@ -6,31 +6,31 @@
         "messager": false,
         "alerts": false,
         "itemId": 98260,
-        "whiteList": [
-            1,
-            2,
-            3,
-            4,
-            5,
-            6,
-            101,
-            102,
-            103,
-            104,
-            105,
-            106,
-            201,
-            202,
-            203,
-            204,
-            205,
-            206
-        ],
-        "markList": [
-            1,
-            2,
-            101,
-            102
-        ]
+        "whiteList": {
+            "Harmony Grass": 1,
+            "Wild Cobseed": 2,
+            "Veridia Root": 3,
+            "Orange Mushroom": 4,
+            "Moongourd": 5,
+            "Apple Tree": 6,
+            "Plain Stone": 101,
+            "Cobala Ore": 102,
+            "Shadmetal Ore": 103,
+            "Xermetal Ore": 104,
+            "Normetal Ore": 105,
+            "Galborne Ore": 106,
+            "Achromic Essence": 201,
+            "Crimson Essence": 202,
+            "Earth Essence": 203,
+            "Azure Essence": 204,
+            "Opal Essence": 205,
+            "Obsidian Essence": 206
+        },
+        "markList": {
+            "Harmony Grass": 1,
+            "Wild Cobseed": 2,
+            "Plain Stone": 101,
+            "Cobala Ore": 102
+        }
     }
 }
