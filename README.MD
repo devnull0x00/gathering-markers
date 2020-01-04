@@ -5,13 +5,15 @@ Spawn item markers on specific gathering nodes and hides undesireable nodes.
 - **gathering** - toggle module off/on (DEFAULT: ON)
 - **gathering on** - turn on module
 - **gathering off** - turn off module
-- **gathering marker** - toggle item markers (DEFAULT: ON)
+- **gathering status** - show module status
+- **gathering markers** - toggle item markers (DEFAULT: ON)
 - **gathering messager** - toggle proxy messages (DEFAULT: OFF)
-- **gathering alert** - toggle system notices (DEFAULT: OFF)
+- **gathering alerts** - toggle system notices (DEFAULT: OFF)
+- **gathering clear** - clears item markers
 
 # Config
 - **enabled** - Turn module on during startup
-- **markenabled** - Enable item spawning
+- **markEnabled** - Enable item spawning
 - **messager** - Enable proxy messages
 - **alerts** - Enable system notices
 - **whiteList** - Gathering nodes not in this list will be hidden
