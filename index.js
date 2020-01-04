@@ -14,7 +14,7 @@ module.exports = function GatheringMarkers(mod) {
     marks = [],
     idMod = 2n;
     
-    mod.hook('S_LOGIN', 10, (event) => {
+    mod.hook('S_LOGIN', 14, (event) => {
         configInit();
     })
     
@@ -57,7 +57,7 @@ module.exports = function GatheringMarkers(mod) {
 
 	function spawnMark(idRef, loc) {
         loc.z -= 100;
-		mod.send('S_SPAWN_DROPITEM', 6, {
+		mod.send('S_SPAWN_DROPITEM', 8, {
 			gameId: idRef,
 			loc: loc,
 			item: Item_ID, 
@@ -114,4 +114,8 @@ module.exports = function GatheringMarkers(mod) {
         mod.command.message(enabled ? 'Enabled' : 'Disabled');
     });
 
+
+    this.destructor = function() {
+        mod.command.remove('gathering');
+    }
 }
