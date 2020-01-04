@@ -1,44 +1,91 @@
 'use strict'
 
 module.exports = function GatheringMarkers(mod) {
-    const config = require('./config.json');
+    let active = true;
+    let idMod = 2n;
+	let marks = [];
     
-    let active = true,
-    enabled = true,
-    markenabled = true,
-    messager = false,
-    alerts = false,
-    Item_ID = 98260,
-    whiteList = [],
-    markList = [],
-    marks = [],
-    idMod = 2n;
-    
+	mod.command.add('gathering', {
+		$default() {
+			mod.command.message('Gathering Marker module. Usage:');
+			mod.command.message('   /8 gathering - Turn module on/off');
+			mod.command.message('   /8 gathering off - Turn module off');
+			mod.command.message('   /8 gathering on - Turn module on');
+			mod.command.message('   /8 gathering status - Shows module status');
+			mod.command.message('   /8 gathering alerts - Toggles system notices');
+			mod.command.message('   /8 gathering messager - Toggles proxy messages');
+			mod.command.message('   /8 gathering markers - Toggles item markers');
+			mod.command.message('   /8 gathering clear - Clears item markers');
+		},
+		off() {
+			mod.settings.enabled = false;
+			mod.command.message('Module: disabled');
+		},
+		on() {
+			mod.settings.enabled = true;
+			mod.command.message('Module: enabled');
+		},
+		status() {
+			mod.command.message('Module: ' + (mod.settings.enabled ? 'enabled' : 'disabled'));
+			if (mod.settings.enabled) {
+				mod.command.message('System popup notice: ' + (mod.settings.alerts ? 'enabled' : 'disabled'));
+				mod.command.message('Proxy messages: ' + (mod.settings.messager ? 'enabled' : 'disabled'));
+				mod.command.message('Item markers: ' + (mod.settings.markEnabled ? 'enabled' : 'disabled'));
+			}
+		},
+		alerts() {
+			mod.settings.alerts = !mod.settings.alerts;
+			mod.command.message('System popup notice: ' + (mod.settings.alerts ? 'enabled' : 'disabled'));
+		},
+		messager() {
+			mod.settings.messager = !mod.settings.messager;
+			mod.command.message('Proxy messages: ' + (mod.settings.messager ? 'enabled' : 'disabled'));
+		},
+		markers() {
+			mod.settings.markEnabled = !mod.settings.markEnabled;
+			mod.command.message('Item markers: ' + (mod.settings.markEnabled ? 'enabled' : 'disabled'));
+		},
+		clear() {
+			if (mod.settings.markEnabled) {
+				mod.command.message("Markers cleared");
+				clearMarks();
+			}
+		},
+		$none() {
+			mod.settings.enabled = !mod.settings.enabled;
+			mod.command.message('Module: ' + (mod.settings.enabled ? 'enabled' : 'disabled'));
+		}
+	})
+
     mod.hook('S_LOGIN', 14, (event) => {
-        configInit();
+
     })
     
-    mod.hook('S_SPAWN_COLLECTION', 4, (event) => {
-        if (!enabled || !active) return;
-        if (!whiteList.includes(event.id)) return false;
+    mod.hook('S_CURRENT_CHANNEL', 2, event => {
 
-        if (markenabled) {   
-            if (markList.includes(event.id) && !marks.includes(event.gameId.toString())) {
+	})
+	
+    mod.hook('S_SPAWN_COLLECTION', 4, (event) => {
+        if (!mod.settings.enabled || !active) return;
+        if (!mod.settings.whiteList.includes(event.id)) return false;
+
+        if (mod.settings.markEnabled) {   
+            if (mod.settings.markList.includes(event.id) && !marks.includes(event.gameId)) {
                 spawnMark(event.gameId*idMod, event.loc);
-                marks.push(event.gameId.toString());
+                marks.push(event.gameId);
             }
         }
         
-        if (alerts) notice('Found ' + event.id)
+        if (mod.settings.alerts) notice('Found ' + event.id)
         
-        if (messager) mod.command.message('Found ' + event.id)
+        if (mod.settings.messager) mod.command.message('Found ' + event.id)
             
     })
         
     mod.hook('S_DESPAWN_COLLECTION', 2, (event) => {
-        if (marks.includes(event.gameId.toString())) {
+        if (marks.includes(event.gameId)) {
             despawnMark(event.gameId*idMod)
-            marks.splice(marks.indexOf(event.gameId.toString()), 1);
+            marks.splice(marks.indexOf(event.gameId), 1);
         }
     })
     
@@ -47,20 +94,12 @@ module.exports = function GatheringMarkers(mod) {
 		marks = [];
 	})
 
-	function configInit() {
-        if (config) {
-            ({enabled,markenabled,messager,alerts,Item_ID,whiteList,markList} = config)
-        } else {
-            mod.command.message("Error: Unable to load config.json - Using default values for now");
-        }
-	}
-
 	function spawnMark(idRef, loc) {
         loc.z -= 100;
 		mod.send('S_SPAWN_DROPITEM', 8, {
 			gameId: idRef,
 			loc: loc,
-			item: Item_ID, 
+			item: mod.settings.itemId, 
 			amount: 1,
 			expiry: 300000,
 			explode:false,
@@ -76,7 +115,13 @@ module.exports = function GatheringMarkers(mod) {
 		mod.send('S_DESPAWN_DROPITEM', 4, {
 			gameId: idRef
 		});
-	}    
+	}
+	
+	function clearMarks() {
+		for (let id of marks) {
+			despawnMark(id*idMod);
+		}
+	}
     
 	function notice(msg) {
 		mod.send('S_DUNGEON_EVENT_MESSAGE', 2, {
@@ -86,36 +131,9 @@ module.exports = function GatheringMarkers(mod) {
             message: msg
         })
     }
-    
-    mod.command.add('gathering', (p1)=> {
-        if (p1) p1 = p1.toLowerCase();
-        if (p1 == null) {
-            enabled = !enabled;
-        } else if (p1 === 'off') {
-            enabled = false;
-        } else if (p1 === 'on') {
-            enabled = true;
-        } else if (['alert', 'alerts'].includes(p1)) {
-			alerts = !alerts;
-			mod.command.message(alerts ? 'System popup notice enabled' : 'System popup notice disabled');
-            return;
-        } else if (['message', 'messages', 'proxy'].includes(p1)) {
-			messager = !messager;
-			mod.command.message(messager ? 'Proxy messages enabled' : 'Proxy messages disabled');
-            return;
-        } else if (['mark', 'marks', 'marker', 'markers'].includes(p1)) {
-			markenabled = !markenabled;
-			mod.command.message(markenabled ? 'Item Markers enabled' : 'Item Markers disabled');
-            return;
-        } else {
-            mod.command.message(p1 +' is an invalid argument');
-            return;
-        }        
-        mod.command.message(enabled ? 'Enabled' : 'Disabled');
-    });
-
-
+	
     this.destructor = function() {
         mod.command.remove('gathering');
+		clearMarks();
     }
 }
